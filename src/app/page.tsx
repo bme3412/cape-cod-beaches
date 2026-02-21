@@ -86,11 +86,6 @@ export default async function HomePage() {
               <p className="font-display text-2xl font-bold text-stone-800">15</p>
               <p className="text-xs font-mono text-stone-500 uppercase tracking-wide">Towns</p>
             </div>
-            <div className="w-px bg-stone-200" />
-            <div>
-              <p className="font-display text-2xl font-bold text-stone-800">0</p>
-              <p className="text-xs font-mono text-stone-500 uppercase tracking-wide">API calls on page load</p>
-            </div>
           </div>
         </div>
 
@@ -121,13 +116,9 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-stone-200 mt-16 py-8">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs font-mono text-stone-400">
+        <div className="max-w-5xl mx-auto px-4">
+          <p className="text-xs font-mono text-stone-400 text-center">
             Photos cached from Google Places · Ratings refreshed weekly
-          </p>
-          <p className="text-xs font-mono text-stone-400">
-            Built with love for the Cape ·{' '}
-            <span className="text-ocean">~$0.88/mo</span> to run
           </p>
         </div>
       </footer>
