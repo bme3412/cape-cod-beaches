@@ -4,8 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { BeachWithData } from '@/types/beach'
 import {
-  cacheAge,
-  cacheAgeLabel,
   BEACH_TYPE_LABELS,
   BEACH_TYPE_COLORS,
   BEST_FOR_LABELS,
@@ -14,27 +12,6 @@ import {
 
 interface Props {
   beach: BeachWithData
-}
-
-function CacheDot({ cachedAt }: { cachedAt: string }) {
-  const age = cacheAge(cachedAt)
-  const label = cacheAgeLabel(cachedAt)
-
-  const colors = {
-    fresh: 'bg-emerald-400',
-    aging: 'bg-amber-400',
-    stale: 'bg-red-400',
-  }
-
-  return (
-    <span
-      className="flex items-center gap-1 text-[10px] font-mono text-stone-400"
-      title={`Photo cached: ${label}`}
-    >
-      <span className={`inline-block w-1.5 h-1.5 rounded-full ${colors[age]}`} />
-      {label}
-    </span>
-  )
 }
 
 function StarRating({ rating }: { rating: number | null }) {
@@ -76,7 +53,7 @@ function StarRating({ rating }: { rating: number | null }) {
 }
 
 export default function BeachCard({ beach }: Props) {
-  const primaryPhoto = beach.photos.find((p) => p.photo_index === 0)
+  const primaryPhoto = beach.photos.find((p) => p.photo_index === 0) ?? beach.photos[0]
   const typeLabel = BEACH_TYPE_LABELS[beach.beach_type]
   const typeBadge = BEACH_TYPE_COLORS[beach.beach_type]
 
@@ -109,12 +86,6 @@ export default function BeachCard({ beach }: Props) {
             </span>
           </div>
 
-          {/* Cache freshness */}
-          {primaryPhoto && (
-            <div className="absolute bottom-2 right-2 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5">
-              <CacheDot cachedAt={primaryPhoto.cached_at} />
-            </div>
-          )}
         </div>
 
         {/* Content */}
