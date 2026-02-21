@@ -15,8 +15,9 @@ export default function BeachGrid({ beaches }: Props) {
   const counts = useMemo(() => {
     const c: Record<FilterType, number> = {
       all: beaches.length,
-      ocean: 0,
-      bay: 0,
+      ocean_surf: 0,
+      bay_calm: 0,
+      sound: 0,
       dunes: 0,
       national_seashore: 0,
       harbor: 0,

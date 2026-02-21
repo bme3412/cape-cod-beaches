@@ -1,4 +1,4 @@
-export type BeachType = 'ocean' | 'bay' | 'dunes' | 'national_seashore' | 'harbor'
+export type BeachType = 'ocean_surf' | 'bay_calm' | 'dunes' | 'national_seashore' | 'harbor' | 'sound'
 
 export type BestFor =
   | 'swimming'
@@ -52,3 +52,4 @@ export interface BeachWithData extends Beach {
 }
 
 export type FilterType = 'all' | BeachType
+

@@ -11,10 +11,11 @@ interface Props {
 
 const FILTERS: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All Beaches' },
-  { value: 'ocean', label: BEACH_TYPE_LABELS.ocean },
-  { value: 'bay', label: BEACH_TYPE_LABELS.bay },
-  { value: 'dunes', label: BEACH_TYPE_LABELS.dunes },
+  { value: 'ocean_surf', label: BEACH_TYPE_LABELS.ocean_surf },
+  { value: 'bay_calm', label: BEACH_TYPE_LABELS.bay_calm },
+  { value: 'sound', label: BEACH_TYPE_LABELS.sound },
   { value: 'national_seashore', label: BEACH_TYPE_LABELS.national_seashore },
+  { value: 'dunes', label: BEACH_TYPE_LABELS.dunes },
   { value: 'harbor', label: BEACH_TYPE_LABELS.harbor },
 ]
 

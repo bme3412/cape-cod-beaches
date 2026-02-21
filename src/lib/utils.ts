@@ -17,16 +17,18 @@ export function cacheAgeLabel(cachedAt: string): string {
 }
 
 export const BEACH_TYPE_LABELS: Record<BeachType, string> = {
-  ocean: 'Ocean / Surf',
-  bay: 'Bay / Calm',
+  ocean_surf: 'Ocean / Surf',
+  bay_calm: 'Bay / Calm',
+  sound: 'Sound Side',
   dunes: 'Dunes',
   national_seashore: 'National Seashore',
   harbor: 'Harbor',
 }
 
 export const BEACH_TYPE_COLORS: Record<BeachType, string> = {
-  ocean: 'bg-blue-100 text-blue-800',
-  bay: 'bg-teal-100 text-teal-800',
+  ocean_surf: 'bg-blue-100 text-blue-800',
+  bay_calm: 'bg-teal-100 text-teal-800',
+  sound: 'bg-cyan-100 text-cyan-800',
   dunes: 'bg-amber-100 text-amber-800',
   national_seashore: 'bg-green-100 text-green-800',
   harbor: 'bg-slate-100 text-slate-700',
