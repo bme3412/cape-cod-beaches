@@ -115,6 +115,25 @@ async function seed() {
       parking_info: beach.parkingInfo ?? null,
       description: beach.description ?? null,
       is_active: true,
+
+      // Expanded fields — written only when present in seed data
+      ...(beach.waterBody !== undefined         && { water_body: beach.waterBody }),
+      ...(beach.avgSummerWaterTempF !== undefined && { avg_water_temp_f: beach.avgSummerWaterTempF }),
+      ...(beach.waveIntensity !== undefined      && { wave_intensity: beach.waveIntensity }),
+      ...(beach.sharkRisk !== undefined          && { shark_risk: beach.sharkRisk }),
+      ...(beach.lifeguards !== undefined         && { lifeguards: beach.lifeguards.available }),
+      ...(beach.lifeguards !== undefined         && { lifeguard_season: beach.lifeguards.season }),
+      ...(beach.lifeguards !== undefined         && { lifeguard_hours: beach.lifeguards.hours }),
+      ...(beach.restrooms !== undefined          && { restrooms: beach.restrooms }),
+      ...(beach.showers !== undefined            && { showers: beach.showers }),
+      ...(beach.foodNearby !== undefined         && { food_nearby: beach.foodNearby }),
+      ...(beach.wheelchairAccessible !== undefined && { wheelchair_accessible: beach.wheelchairAccessible }),
+      ...(beach.dogPolicy !== undefined          && { dog_policy_allowed: beach.dogPolicy.allowed }),
+      ...(beach.dogPolicy !== undefined          && { dog_policy_details: beach.dogPolicy.details }),
+      ...(beach.crowdLevel !== undefined         && { crowd_level: beach.crowdLevel }),
+      ...(beach.dailyParkingFee !== undefined    && { daily_parking_fee: beach.dailyParkingFee }),
+      ...(beach.beachLengthMiles !== undefined   && { beach_length_miles: beach.beachLengthMiles }),
+      ...(beach.sunsetView !== undefined         && { sunset_view: beach.sunsetView }),
     });
 
     if (beachError) {

@@ -16,7 +16,7 @@ export type BestFor =
   | 'snorkeling'
 
 export interface Beach {
-  id: string // place_id
+  id: string
   name: string
   town: string
   lat: number
@@ -26,6 +26,37 @@ export interface Beach {
   description: string
   is_active: boolean
   created_at?: string
+
+  // Expanded fields — nullable, populated as data is enriched
+  region?: string
+  island?: string
+  access_type?: string
+  parking_info?: string
+
+  // Water & conditions
+  water_body?: string
+  avg_water_temp_f?: string
+  wave_intensity?: 'calm' | 'moderate' | 'surf'
+  shark_risk?: 'low' | 'moderate' | 'elevated'
+
+  // Facilities
+  lifeguards?: boolean
+  lifeguard_season?: string
+  lifeguard_hours?: string
+  restrooms?: boolean
+  showers?: boolean
+  food_nearby?: string
+  wheelchair_accessible?: boolean
+
+  // Dog policy
+  dog_policy_allowed?: boolean
+  dog_policy_details?: string
+
+  // Planning
+  crowd_level?: 'low' | 'moderate' | 'high'
+  daily_parking_fee?: number | null
+  beach_length_miles?: number | null
+  sunset_view?: boolean
 }
 
 export interface BeachPhoto {
@@ -52,4 +83,3 @@ export interface BeachWithData extends Beach {
 }
 
 export type FilterType = 'all' | BeachType
-
