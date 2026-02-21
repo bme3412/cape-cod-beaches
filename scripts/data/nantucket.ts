@@ -1,0 +1,198 @@
+import type { BeachSeed } from "./types";
+
+const beaches: BeachSeed[] = [
+  {
+    searchQuery: "Jetties Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "harbor",
+    bestFor: ["families", "playground", "calm water", "events"],
+    accessType: "public",
+    parkingInfo: "Free, walkable from town",
+    description:
+      "Nantucket's most accessible beach — a 15-minute walk from town with calm harbor water, a playground, snack bar, and tennis courts. Host of the annual Film Festival's beach screening.",
+  },
+  {
+    searchQuery: "Children's Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "harbor",
+    bestFor: ["toddlers", "playground", "calm water"],
+    accessType: "public",
+    parkingInfo: "Town center, walk or bike",
+    description:
+      "Right in Nantucket Harbor with water so calm it barely qualifies as the ocean. A grassy park with a playground, bandstand, and concession. Designed for the under-5 crowd.",
+  },
+  {
+    searchQuery: "Brant Point Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "harbor",
+    bestFor: ["families", "lighthouse", "ferry watching"],
+    accessType: "public",
+    parkingInfo: "Walk or bike from town",
+    description:
+      "Home to the iconic Brant Point Lighthouse — the second-oldest lighthouse in America. Watch ferries glide in and out of the harbor. Calm water, easy walk from town, and a Nantucket must-see.",
+  },
+  {
+    searchQuery: "Steps Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "sound",
+    bestFor: ["snorkeling", "seclusion", "walking"],
+    accessType: "public",
+    parkingInfo: "Street parking, bike recommended",
+    description:
+      "A hidden gem down a steep staircase near the Cliff area. Rocky shore with the best snorkeling on Nantucket. Small and quiet — the stairs keep the crowds away.",
+  },
+  {
+    searchQuery: "Dionis Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "sound",
+    bestFor: ["families", "calm water", "dunes"],
+    accessType: "public",
+    parkingInfo: "Small lot, fills by 10am in summer",
+    description:
+      "Nantucket's best-kept family secret. North shore location means calm, warm water. Surrounded by high dunes that block the wind and create natural privacy. Get there early.",
+  },
+  {
+    searchQuery: "Cisco Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["surfing", "young crowd"],
+    accessType: "public",
+    parkingInfo: "Dirt lot, free",
+    description:
+      "Nantucket's surf beach. South-facing with consistent swells and a young, laid-back crowd. Close to Cisco Brewers, so the afternoon migration from beach to brewery is a well-worn path.",
+  },
+  {
+    searchQuery: "Surfside Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["surfing", "bodyboarding", "biking"],
+    accessType: "public",
+    parkingInfo: "Lot at beach end, bike path from town",
+    description:
+      "The most popular south shore beach, easily reached by the bike path from town. Big waves, lifeguards, and a concession stand. The bike ride out is flat and gorgeous.",
+  },
+  {
+    searchQuery: "Nobadeer Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["surfing", "young crowd"],
+    accessType: "public",
+    parkingInfo: "Near airport, free lot",
+    description:
+      "Next to the airport, so you get the surreal experience of planes coming in low overhead while you surf. Big waves and a college-age crowd. Unofficial party beach of Nantucket.",
+  },
+  {
+    searchQuery: "Miacomet Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["walking", "seclusion"],
+    accessType: "public",
+    parkingInfo: "Small lot off Miacomet Road",
+    description:
+      "A long, wide south shore beach that's less discovered than Surfside or Cisco. Great for long walks. The adjacent Miacomet Golf Club means the area stays undeveloped.",
+  },
+  {
+    searchQuery: "Madaket Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["sunset", "surfing", "seclusion"],
+    accessType: "public",
+    parkingInfo: "Small lot at end of Madaket Road",
+    description:
+      "The westernmost point on Nantucket, famous for having the best sunset on the island. Strong currents and waves — more for watching than swimming. The 6-mile bike ride out is half the adventure.",
+  },
+  {
+    searchQuery: "Great Point Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "dunes",
+    bestFor: ["fishing", "seclusion", "nature", "off-road"],
+    accessType: "public",
+    parkingInfo: "4WD permit required, $250/season from Trustees",
+    description:
+      "A remote spit of sand at the northeastern tip of the island, accessible only by 4WD. A lighthouse, incredible fishing, and seals are the only company. This is Nantucket at its wildest.",
+  },
+  {
+    searchQuery: "Sconset Beach Siasconset Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["village charm", "scenery", "walking"],
+    accessType: "public",
+    parkingInfo: "Street parking in Sconset village",
+    description:
+      "The beach below the charming village of Siasconset (Sconset), known for its rose-covered cottages. Dramatic bluffs with active erosion. Strong surf and a wild, beautiful setting.",
+  },
+  {
+    searchQuery: "Eel Point Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "bay_calm",
+    bestFor: ["nature", "seclusion", "birding"],
+    accessType: "public",
+    parkingInfo: "Small lot, walk or bike along Eel Point Road",
+    description:
+      "A remote north shore beach requiring a sandy road walk to access. The spit of land at Eel Point is a prime birding spot where Nantucket Sound meets the open harbor. Pristine and wild.",
+  },
+  {
+    searchQuery: "Ladies Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["walking", "seclusion"],
+    accessType: "public",
+    parkingInfo: "Small lot",
+    description:
+      "Tucked between Surfside and Cisco on the south shore. Less known and less visited than its famous neighbors. Named for the Victorian-era practice of gender-segregated swimming.",
+  },
+  {
+    searchQuery: "Tom Nevers Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["seclusion", "walking", "fishing"],
+    accessType: "public",
+    parkingInfo: "End of Tom Nevers Road, limited",
+    description:
+      "The easternmost south shore beach, far from the main tourist areas. Strong surf and a remote, windswept character. Excellent for surf fishing and long, solitary walks.",
+  },
+  {
+    searchQuery: "Quidnet Beach Nantucket MA",
+    town: "Nantucket",
+    region: "nantucket",
+    island: "nantucket",
+    beachType: "ocean_surf",
+    bestFor: ["seclusion", "scenery"],
+    accessType: "public",
+    parkingInfo: "Small lot at end of Quidnet Road",
+    description:
+      "A remote east shore beach where Sesachacha Pond nearly meets the ocean. Dramatic scenery where freshwater and saltwater worlds collide. Few visitors make it out here, which is the appeal.",
+  },
+];
+
+export default beaches;
