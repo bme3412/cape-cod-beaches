@@ -1,6 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { put } from "@vercel/blob";
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load .env.local (Next.js convention) before anything reads process.env
+config({ path: resolve(process.cwd(), ".env.local") });
 
 // ============================================
 // Configuration
@@ -671,14 +675,15 @@ async function searchPlace(query: string): Promise<any | null> {
       locationBias: {
         circle: {
           center: { latitude: 41.67, longitude: -70.3 }, // center of Cape Cod
-          radius: 80000, // 80km radius covers Cape + islands
+          radius: 50000, // 50km max allowed by Places API (New)
         },
       },
     }),
   });
 
   if (!res.ok) {
-    console.error(`Text Search failed for "${query}": ${res.status}`);
+    const errBody = await res.text();
+    console.error(`Text Search failed for "${query}": ${res.status} — ${errBody}`);
     return null;
   }
 
