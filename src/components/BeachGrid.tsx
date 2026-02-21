@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import BeachCard from './BeachCard'
 import FilterBar from './FilterBar'
 import type { BeachWithData, FilterType, BeachType, BestFor } from '@/types/beach'
-import { BEST_FOR_LABELS } from '@/lib/utils'
+import { BEST_FOR_LABELS, BEST_FOR_ICONS, KNOWN_BEST_FOR } from '@/lib/utils'
 
 const MapView = dynamic(() => import('./MapView'), {
   ssr: false,
@@ -39,6 +39,16 @@ const REGION_LABELS: Record<string, string> = {
   marthas_vineyard: "Martha's Vineyard",
 }
 
+// Towns grouped by region, in display order
+const TOWN_GROUPS: { region: string; towns: string[] }[] = [
+  { region: 'Upper Cape', towns: ['Bourne', 'Sandwich', 'Barnstable', 'Falmouth', 'Mashpee', 'Centerville', 'Cotuit', 'Osterville', 'Hyannis', 'Hyannisport'] },
+  { region: 'Mid Cape', towns: ['Yarmouth', 'Dennis', 'Brewster', 'Harwich', 'Chatham', 'Orleans'] },
+  { region: 'Lower Cape', towns: ['Eastham', 'Wellfleet'] },
+  { region: 'Outer Cape', towns: ['Truro', 'Provincetown'] },
+  { region: 'Nantucket', towns: ['Nantucket'] },
+  { region: "Martha's Vineyard", towns: ['Edgartown', 'Oak Bluffs', 'Vineyard Haven', 'Chilmark', 'Aquinnah', 'West Tisbury'] },
+]
+
 function sortBeaches(beaches: BeachWithData[], sort: SortOption): BeachWithData[] {
   return [...beaches].sort((a, b) => {
     if (sort === 'rating') return (b.rating?.rating ?? 0) - (a.rating?.rating ?? 0)
@@ -52,14 +62,17 @@ export default function BeachGrid({ beaches }: Props) {
   const [sort, setSort] = useState<SortOption>('alpha')
   const [search, setSearch] = useState('')
   const [bestForFilter, setBestForFilter] = useState<BestFor | null>(null)
+  const [townFilter, setTownFilter] = useState<string>('')
   const [view, setView] = useState<ViewMode>('grid')
 
-  // All unique best_for tags across all beaches, sorted by frequency
+  // Only known, canonical best-for tags — sorted by frequency
   const allTags = useMemo(() => {
     const freq: Partial<Record<BestFor, number>> = {}
     for (const b of beaches) {
       for (const tag of b.best_for) {
-        freq[tag] = (freq[tag] ?? 0) + 1
+        if (KNOWN_BEST_FOR.has(tag as BestFor)) {
+          freq[tag as BestFor] = (freq[tag as BestFor] ?? 0) + 1
+        }
       }
     }
     return (Object.entries(freq) as [BestFor, number][])
@@ -86,7 +99,8 @@ export default function BeachGrid({ beaches }: Props) {
   const filtered = useMemo(() => {
     let result = beaches
     if (filter !== 'all') result = result.filter((b) => b.beach_type === filter)
-    if (bestForFilter) result = result.filter((b) => b.best_for.includes(bestForFilter))
+    if (townFilter) result = result.filter((b) => b.town === townFilter)
+    if (bestForFilter) result = result.filter((b) => (b.best_for as string[]).includes(bestForFilter))
     if (search.trim()) {
       const q = search.toLowerCase()
       result = result.filter(
@@ -94,16 +108,11 @@ export default function BeachGrid({ beaches }: Props) {
       )
     }
     return sortBeaches(result, sort)
-  }, [beaches, filter, bestForFilter, search, sort])
+  }, [beaches, filter, townFilter, bestForFilter, search, sort])
 
-  const activeFilterCount = [
-    filter !== 'all',
-    bestForFilter !== null,
-    search.trim() !== '',
-    sort !== 'alpha',
-  ].filter(Boolean).length
+  const anyFilterActive = filter !== 'all' || townFilter !== '' || bestForFilter !== null || search.trim() !== '' || sort !== 'alpha'
 
-  const showGrouped = filter === 'all' && !search.trim() && !bestForFilter
+  const showGrouped = filter === 'all' && !townFilter && !search.trim() && !bestForFilter
 
   const grouped = useMemo(() => {
     if (!showGrouped) return null
@@ -127,114 +136,191 @@ export default function BeachGrid({ beaches }: Props) {
 
   const clearAll = useCallback(() => {
     setFilter('all')
+    setTownFilter('')
     setBestForFilter(null)
     setSearch('')
     setSort('alpha')
   }, [])
 
+  const selectStyle = {
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat' as const,
+    backgroundPosition: 'right 10px center',
+  }
+
   return (
     <div>
-      {/* ── Sticky controls wrapper ── */}
-      <div className="sticky top-0 z-20 bg-[#faf8f5] pt-2 pb-4 -mx-4 px-4 border-b border-stone-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        {/* Search + Sort + View toggle */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-3">
+      {/* ── Sticky controls ── */}
+      <div className="sticky top-0 z-20 bg-[#faf8f5] pt-3 pb-3 -mx-4 px-4 border-b border-stone-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+
+        {/* Row 1 — Search + Sort + View */}
+        <div className="flex gap-2 mb-3">
           <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
-              placeholder="Search beaches or towns..."
+              placeholder="Search beaches or towns…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm font-mono bg-white border border-stone-200 rounded-full focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean/20 placeholder:text-stone-400 text-stone-700"
+              className="w-full pl-8 pr-8 py-2 text-sm font-mono bg-white border border-stone-200 rounded-full focus:outline-none focus:border-ocean/60 focus:ring-2 focus:ring-ocean/10 placeholder:text-stone-400 text-stone-700"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                aria-label="Clear search"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             )}
           </div>
 
-          <div className="flex gap-2">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortOption)}
-              className="flex-1 sm:flex-none pl-4 pr-8 py-2 text-sm font-mono bg-white border border-stone-200 rounded-full focus:outline-none focus:border-ocean text-stone-600 appearance-none cursor-pointer"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
-            >
-              <option value="alpha">A – Z</option>
-              <option value="rating">Top Rated</option>
-              <option value="reviews">Most Reviewed</option>
-            </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+            className="pl-3 pr-7 py-2 text-xs font-mono bg-white border border-stone-200 rounded-full focus:outline-none focus:border-ocean/60 text-stone-600 appearance-none cursor-pointer"
+            style={selectStyle}
+          >
+            <option value="alpha">A – Z</option>
+            <option value="rating">Top Rated</option>
+            <option value="reviews">Most Reviewed</option>
+          </select>
 
-            {/* Grid / Map toggle */}
-            <div className="flex rounded-full border border-stone-200 bg-white overflow-hidden">
+          {/* Grid / Map toggle */}
+          <div className="flex rounded-full border border-stone-200 bg-white overflow-hidden flex-shrink-0">
+            <button
+              onClick={() => setView('grid')}
+              title="Grid view"
+              className={`px-2.5 py-2 transition-colors ${view === 'grid' ? 'bg-stone-800 text-white' : 'text-stone-400 hover:text-stone-700'}`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setView('map')}
+              title="Map view"
+              className={`px-2.5 py-2 transition-colors ${view === 'map' ? 'bg-stone-800 text-white' : 'text-stone-400 hover:text-stone-700'}`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2 — Beach type */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider flex-shrink-0 w-14">Type</span>
+          <FilterBar active={filter} onChange={setFilter} counts={counts} />
+        </div>
+
+        {/* Row 3 — Town */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider flex-shrink-0 w-14">Town</span>
+          <div className="flex-1 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5">
               <button
-                onClick={() => setView('grid')}
-                className={`px-3 py-2 transition-colors ${view === 'grid' ? 'bg-ocean text-white' : 'text-stone-500 hover:text-stone-700'}`}
-                title="Grid view"
+                onClick={() => setTownFilter('')}
+                className={`flex-shrink-0 text-xs font-mono px-3 py-1.5 rounded-full border transition-all ${
+                  townFilter === ''
+                    ? 'bg-stone-800 text-white border-stone-800'
+                    : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:text-stone-800'
+                }`}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
+                All
               </button>
-              <button
-                onClick={() => setView('map')}
-                className={`px-3 py-2 transition-colors ${view === 'map' ? 'bg-ocean text-white' : 'text-stone-500 hover:text-stone-700'}`}
-                title="Map view"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-              </button>
+          {TOWN_GROUPS.map(({ towns }) =>
+              towns.map((town) => {
+                  const count = beaches.filter((b) => b.town === town).length
+                  if (count === 0) return null
+                  const isActive = townFilter === town
+                  return (
+                    <button
+                      key={town}
+                      onClick={() => setTownFilter(isActive ? '' : town)}
+                      className={`flex-shrink-0 text-xs font-mono px-3 py-1.5 rounded-full border transition-all whitespace-nowrap ${
+                        isActive
+                          ? 'bg-stone-800 text-white border-stone-800'
+                          : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:text-stone-800'
+                      }`}
+                    >
+                      {town}
+                      <span className={`ml-1 text-[10px] tabular-nums ${isActive ? 'text-white/70' : 'text-stone-400'}`}>
+                        {count}
+                      </span>
+                    </button>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>
 
-        {/* Beach type filter bar */}
-        <div className="mb-3">
-          <FilterBar active={filter} onChange={setFilter} counts={counts} />
-        </div>
-
-        {/* Best for chips */}
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-          {allTags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setBestForFilter(bestForFilter === tag ? null : tag)}
-              className={`flex-shrink-0 text-[11px] font-mono px-2.5 py-1 rounded-full border transition-all ${
-                bestForFilter === tag
-                  ? 'bg-stone-800 text-white border-stone-800'
-                  : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400 hover:text-stone-700'
-              }`}
-            >
-              {BEST_FOR_LABELS[tag]}
-            </button>
-          ))}
+        {/* Row 4 — Best for */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider flex-shrink-0 w-14">For</span>
+          <div className="flex-1 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5">
+              {allTags.map((tag) => {
+                const isActive = bestForFilter === tag
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => setBestForFilter(isActive ? null : tag)}
+                    className={`flex-shrink-0 inline-flex items-center gap-1 text-xs font-mono px-3 py-1.5 rounded-full border transition-all whitespace-nowrap ${
+                      isActive
+                        ? 'bg-ocean text-white border-ocean'
+                        : 'bg-white text-stone-600 border-stone-200 hover:border-ocean/50 hover:text-ocean'
+                    }`}
+                  >
+                    <span className="text-[11px] leading-none">{BEST_FOR_ICONS[tag]}</span>
+                    {BEST_FOR_LABELS[tag]}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ── Active filter summary ── */}
-      <div className="flex items-center justify-between mt-4 mb-5 min-h-[20px]">
-        <p className="text-xs font-mono text-stone-400">
-          {filtered.length === beaches.length ? (
-            `${beaches.length} beaches`
+      {/* ── Filter summary bar ── */}
+      <div className="flex items-center justify-between mt-4 mb-5 min-h-[18px]">
+        <p className="text-xs font-mono text-stone-400 leading-none">
+          {!anyFilterActive ? (
+            <span>{beaches.length} beaches</span>
           ) : (
-            <>
-              <span className="text-stone-600 font-medium">{filtered.length}</span> of {beaches.length} beaches
-              {filter !== 'all' && <> · <span className="text-ocean">{filter.replace('_', ' / ')}</span></>}
-              {bestForFilter && <> · <span className="text-stone-600">{BEST_FOR_LABELS[bestForFilter]}</span></>}
-              {search.trim() && <> · matching &ldquo;<span className="text-stone-600">{search}</span>&rdquo;</>}
-              {sort !== 'alpha' && <> · {sort === 'rating' ? 'top rated' : 'most reviewed'}</>}
-            </>
+            <span>
+              <span className="text-stone-700 font-medium">{filtered.length}</span>
+              <span> of {beaches.length}</span>
+              {filter !== 'all' && (
+                <span> · <span className="text-ocean">{filter.replace(/_/g, ' / ')}</span></span>
+              )}
+              {townFilter && (
+                <span> · <span className="text-stone-700">{townFilter}</span></span>
+              )}
+              {bestForFilter && (
+                <span> · {BEST_FOR_ICONS[bestForFilter]} <span className="text-stone-700">{BEST_FOR_LABELS[bestForFilter]}</span></span>
+              )}
+              {search.trim() && (
+                <span> · &ldquo;<span className="text-stone-700">{search}</span>&rdquo;</span>
+              )}
+            </span>
           )}
         </p>
-        {activeFilterCount > 0 && (
-          <button onClick={clearAll} className="text-[11px] font-mono text-stone-400 hover:text-ocean transition-colors">
-            Clear all ×
+        {anyFilterActive && (
+          <button
+            onClick={clearAll}
+            className="text-[11px] font-mono text-stone-400 hover:text-stone-700 transition-colors flex items-center gap-1"
+          >
+            Clear all
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         )}
       </div>
@@ -242,8 +328,11 @@ export default function BeachGrid({ beaches }: Props) {
       {/* ── Content ── */}
       {filtered.length === 0 ? (
         <div className="py-20 text-center">
-          <p className="text-stone-400 font-mono mb-2">No beaches match your filters.</p>
-          <button onClick={clearAll} className="text-sm text-ocean font-mono hover:underline">
+          <p className="text-stone-400 font-mono text-sm mb-3">No beaches match your filters.</p>
+          <button
+            onClick={clearAll}
+            className="text-sm font-mono text-ocean hover:underline"
+          >
             Clear all filters
           </button>
         </div>

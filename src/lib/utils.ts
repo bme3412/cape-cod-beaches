@@ -34,6 +34,16 @@ export const BEACH_TYPE_COLORS: Record<BeachType, string> = {
   harbor: 'bg-slate-100 text-slate-700',
 }
 
+// Dot color for each beach type (used in filter pills)
+export const BEACH_TYPE_DOT: Record<BeachType, string> = {
+  ocean_surf: 'bg-blue-500',
+  bay_calm: 'bg-teal-500',
+  sound: 'bg-cyan-500',
+  dunes: 'bg-amber-500',
+  national_seashore: 'bg-green-600',
+  harbor: 'bg-slate-400',
+}
+
 export const BEST_FOR_LABELS: Record<BestFor, string> = {
   swimming: 'Swimming',
   surfing: 'Surfing',
@@ -49,6 +59,25 @@ export const BEST_FOR_LABELS: Record<BestFor, string> = {
   seclusion: 'Seclusion',
   snorkeling: 'Snorkeling',
 }
+
+export const BEST_FOR_ICONS: Record<BestFor, string> = {
+  swimming: '🏊',
+  surfing: '🏄',
+  families: '👨‍👩‍👧',
+  sunsets: '🌅',
+  sunrises: '🌄',
+  hiking: '🥾',
+  birding: '🦅',
+  fishing: '🎣',
+  windsurfing: '🪁',
+  kayaking: '🚣',
+  dogs: '🐕',
+  seclusion: '🔭',
+  snorkeling: '🤿',
+}
+
+// Canonical set of filterable tags (guards against freeform tags in seed data)
+export const KNOWN_BEST_FOR = new Set(Object.keys(BEST_FOR_LABELS) as BestFor[])
 
 export function formatRating(rating: number | null): string {
   if (rating === null) return '—'
