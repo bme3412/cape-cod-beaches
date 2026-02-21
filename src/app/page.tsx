@@ -13,7 +13,14 @@ async function getBeaches(): Promise<BeachWithData[]> {
 
   if (!supabaseUrl || !supabaseKey) return []
 
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  // Pass cache: 'no-store' through the global fetch override so Next.js
+  // never caches Supabase responses across requests.
+  const supabase = createClient(supabaseUrl, supabaseKey, {
+    global: {
+      fetch: (url: RequestInfo | URL, options: RequestInit = {}) =>
+        fetch(url, { ...options, cache: 'no-store' }),
+    },
+  })
 
   const { data: beaches } = await supabase
     .from('beaches')
@@ -194,6 +201,9 @@ function FeaturedHero({ beach, total }: { beach: BeachWithData; total: number })
     </section>
   )
 }
+
+// Always fetch fresh data — never serve a cached page
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Cape Cod Beach Guide — The Best Beaches on the Cape',
