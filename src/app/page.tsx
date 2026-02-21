@@ -1,17 +1,49 @@
+import { createClient } from '@supabase/supabase-js'
 import BeachGrid from '@/components/BeachGrid'
 import type { BeachWithData } from '@/types/beach'
 
 async function getBeaches(): Promise<BeachWithData[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  try {
-    const res = await fetch(`${baseUrl}/api/beaches`, {
-      next: { revalidate: 3600 },
-    })
-    if (!res.ok) return []
-    return res.json()
-  } catch {
-    return []
-  }
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) return []
+
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
+  const { data: beaches } = await supabase
+    .from('beaches')
+    .select('*')
+    .eq('is_active', true)
+    .order('name')
+
+  if (!beaches || beaches.length === 0) return []
+
+  const beachIds = beaches.map((b) => b.id)
+
+  const [{ data: photos }, { data: ratings }] = await Promise.all([
+    supabase.from('beach_photos').select('*').in('beach_id', beachIds).order('photo_index'),
+    supabase.from('beach_ratings').select('*').in('beach_id', beachIds),
+  ])
+
+  type PhotoRow = NonNullable<typeof photos>[0]
+  type RatingRow = NonNullable<typeof ratings>[0]
+
+  const photosByBeach = (photos ?? []).reduce<Record<string, PhotoRow[]>>((acc, p) => {
+    if (!acc[p.beach_id]) acc[p.beach_id] = []
+    acc[p.beach_id].push(p)
+    return acc
+  }, {})
+
+  const ratingsById = (ratings ?? []).reduce<Record<string, RatingRow>>((acc, r) => {
+    acc[r.beach_id] = r
+    return acc
+  }, {})
+
+  return beaches.map((beach) => ({
+    ...beach,
+    photos: photosByBeach[beach.id] ?? [],
+    rating: ratingsById[beach.id] ?? null,
+  })) as BeachWithData[]
 }
 
 export const metadata = {
@@ -38,7 +70,7 @@ export default async function HomePage() {
               <span className="text-ocean">Beaches</span>
             </h1>
             <p className="text-stone-500 text-lg leading-relaxed max-w-xl">
-              From the thundering surf of the National Seashore to the calm, warm shallows of 
+              From the thundering surf of the National Seashore to the calm, warm shallows of
               Nantucket Sound — a local&apos;s guide to the water&apos;s edge.
             </p>
           </div>
