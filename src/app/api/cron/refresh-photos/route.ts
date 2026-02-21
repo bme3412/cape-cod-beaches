@@ -26,9 +26,9 @@ export async function GET(req: NextRequest) {
     .select("beach_id")
     .lt("expires_at", cutoff);
 
-  const beachIds = [
-    ...new Set((expiredPhotos || []).map((p) => p.beach_id)),
-  ];
+  const beachIds = Array.from(
+    new Set((expiredPhotos || []).map((p) => p.beach_id))
+  );
 
   if (beachIds.length === 0) {
     return NextResponse.json({ message: "No photos need refresh" });
