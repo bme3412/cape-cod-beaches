@@ -1,26 +1,65 @@
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/600.css';
+@import '@fontsource/playfair-display/700.css';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ocean: #0077b6;
+  --color-sand: #e9c46a;
+  --color-seafoam: #52b788;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #faf8f5;
+    color: #292524;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-mono {
+    font-family: 'DM Mono', 'Courier New', monospace;
+  }
+
+  .text-ocean {
+    color: var(--color-ocean);
+  }
+
+  .bg-ocean {
+    background-color: var(--color-ocean);
+  }
+
+  .text-sand {
+    color: var(--color-sand);
+  }
+
+  .text-seafoam {
+    color: var(--color-seafoam);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
