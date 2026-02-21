@@ -19,7 +19,7 @@ interface Props {
   beach: BeachWithData
 }
 
-// ── Small sub-components ────────────────────────────────────────
+// ── Shared primitives ─────────────────────────────────────────
 
 function CacheBadge({ cachedAt }: { cachedAt: string }) {
   const age = cacheAge(cachedAt)
@@ -63,10 +63,18 @@ function StarRow({ rating, count }: { rating: number | null; count: number | nul
   )
 }
 
-function InfoRow({ icon, label, value, className }: { icon: string; label: string; value: React.ReactNode; className?: string }) {
+function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`flex items-start gap-3 py-3 border-b border-stone-100 last:border-0 ${className ?? ''}`}>
-      <span className="text-base w-5 text-center flex-shrink-0 mt-0.5">{icon}</span>
+    <div className="px-4 py-2.5 bg-stone-50 border-b border-stone-100">
+      <p className="text-[10px] font-mono font-semibold text-stone-400 uppercase tracking-wider">{children}</p>
+    </div>
+  )
+}
+
+function Row({ icon, label, value }: { icon: string; label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 px-4 py-3 border-b border-stone-100 last:border-0">
+      <span className="text-sm w-5 text-center flex-shrink-0 mt-0.5 leading-none">{icon}</span>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-0.5">{label}</p>
         <div className="text-sm text-stone-700 leading-snug">{value}</div>
@@ -75,95 +83,78 @@ function InfoRow({ icon, label, value, className }: { icon: string; label: strin
   )
 }
 
-function AccessBadge({ accessType }: { accessType?: string }) {
-  if (!accessType) return null
-  const styles: Record<string, string> = {
-    public: 'bg-green-50 text-green-700 border-green-200',
-    sticker_required: 'bg-amber-50 text-amber-700 border-amber-200',
-    resident_only: 'bg-red-50 text-red-600 border-red-200',
-    residents_only: 'bg-red-50 text-red-600 border-red-200',
-    national_seashore_pass: 'bg-blue-50 text-blue-700 border-blue-200',
-  }
-  const labels: Record<string, string> = {
-    public: 'Free & Open',
-    sticker_required: 'Sticker / Day Fee',
-    resident_only: 'Residents Only',
-    residents_only: 'Residents Only',
-    national_seashore_pass: 'National Seashore Pass',
-  }
-  const icons: Record<string, string> = {
-    public: '🟢',
-    sticker_required: '🟡',
-    resident_only: '🔴',
-    residents_only: '🔴',
-    national_seashore_pass: '🔵',
+// ── Field-specific display components ────────────────────────
+
+function AccessBadge({ accessType }: { accessType: string }) {
+  const map: Record<string, { label: string; style: string; dot: string }> = {
+    public:                  { label: 'Free & Open to All',     style: 'bg-green-50 text-green-700 border-green-200',  dot: '🟢' },
+    sticker_required:        { label: 'Sticker / Day Fee',       style: 'bg-amber-50 text-amber-700 border-amber-200',  dot: '🟡' },
+    resident_only:           { label: 'Residents Only',          style: 'bg-red-50 text-red-600 border-red-200',        dot: '🔴' },
+    residents_only:          { label: 'Residents Only',          style: 'bg-red-50 text-red-600 border-red-200',        dot: '🔴' },
+    national_seashore_pass:  { label: 'National Seashore Pass',  style: 'bg-blue-50 text-blue-700 border-blue-200',     dot: '🔵' },
   }
   const key = accessType.toLowerCase()
-  const style = styles[key] ?? 'bg-stone-50 text-stone-600 border-stone-200'
-  const label = labels[key] ?? accessType
-  const icon = icons[key] ?? '⚪'
+  const info = map[key] ?? { label: accessType, style: 'bg-stone-50 text-stone-600 border-stone-200', dot: '⚪' }
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-mono font-medium px-3 py-1.5 rounded-full border ${style}`}>
-      <span>{icon}</span>
-      {label}
+    <span className={`inline-flex items-center gap-1.5 text-xs font-mono font-medium px-3 py-1.5 rounded-full border ${info.style}`}>
+      {info.dot} {info.label}
     </span>
   )
 }
 
-function WaveBadge({ intensity }: { intensity?: string }) {
-  if (!intensity) return null
-  const map = { calm: { label: 'Calm Water', color: 'text-teal-600', bars: 1 }, moderate: { label: 'Moderate', color: 'text-amber-600', bars: 2 }, surf: { label: 'Surf / Strong', color: 'text-blue-600', bars: 3 } }
-  const info = map[intensity as keyof typeof map]
-  if (!info) return null
+function WaveBar({ intensity }: { intensity: string }) {
+  const map = { calm: { label: 'Calm water', color: 'text-teal-600', bars: 1 }, moderate: { label: 'Moderate chop', color: 'text-amber-600', bars: 2 }, surf: { label: 'Surf / strong', color: 'text-blue-700', bars: 3 } }
+  const info = map[intensity as keyof typeof map] ?? { label: intensity, color: 'text-stone-600', bars: 0 }
   return (
-    <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${info.color}`}>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <span key={i} className={`inline-block w-1 rounded-full ${i < info.bars ? 'bg-current h-4' : 'bg-current opacity-20 h-2'}`} />
-      ))}
+    <span className={`inline-flex items-center gap-2 font-medium ${info.color}`}>
+      <span className="flex items-end gap-0.5">
+        {[1, 2, 3].map((n) => (
+          <span key={n} className={`inline-block w-1.5 rounded-full transition-all ${n <= info.bars ? 'bg-current' : 'bg-current opacity-20'}`} style={{ height: n <= info.bars ? `${8 + n * 4}px` : '8px' }} />
+        ))}
+      </span>
       {info.label}
     </span>
   )
 }
 
-function SharkBadge({ risk }: { risk?: string }) {
-  if (!risk) return null
-  const map = { low: { label: 'Low Risk', color: 'text-emerald-600' }, moderate: { label: 'Moderate', color: 'text-amber-600' }, elevated: { label: 'Elevated', color: 'text-red-600' } }
-  const info = map[risk as keyof typeof map]
-  if (!info) return null
-  return <span className={`text-sm font-medium ${info.color}`}>🦈 {info.label}</span>
+function TideBadge({ variation }: { variation: string }) {
+  const map = { low: 'Low variance', moderate: 'Moderate tides', high: 'High variance' }
+  return <span className="text-sm text-stone-600">{map[variation as keyof typeof map] ?? variation}</span>
 }
 
-function FacilityIcons({ beach }: { beach: BeachWithData }) {
+function RiskBadge({ level, type }: { level: string; type: 'shark' | 'jellyfish' }) {
+  const colorMap: Record<string, string> = { low: 'text-emerald-600', moderate: 'text-amber-600', elevated: 'text-red-600' }
+  const color = colorMap[level.toLowerCase()] ?? 'text-stone-600'
+  if (type === 'jellyfish') return <span className="text-sm text-stone-600">{level}</span>
+  const sharkLabel: Record<string, string> = { low: 'Low risk', moderate: 'Moderate risk', elevated: 'Elevated risk' }
+  return <span className={`text-sm font-medium ${color}`}>{sharkLabel[level.toLowerCase()] ?? level}</span>
+}
+
+function FacilityDots({ beach }: { beach: BeachWithData }) {
   const items = [
-    { show: beach.lifeguards === true, icon: '🏊', label: 'Lifeguards' },
-    { show: beach.restrooms === true, icon: '🚻', label: 'Restrooms' },
-    { show: beach.showers === true, icon: '🚿', label: 'Showers' },
-    { show: beach.wheelchair_accessible === true, icon: '♿', label: 'Accessible' },
+    { key: 'lifeguards', icon: '🏊', label: 'Lifeguards', val: beach.lifeguards },
+    { key: 'restrooms', icon: '🚻', label: 'Restrooms', val: beach.restrooms },
+    { key: 'showers', icon: '🚿', label: 'Showers', val: beach.showers },
+    { key: 'changing_rooms', icon: '🔄', label: 'Changing rooms', val: beach.changing_rooms },
+    { key: 'wheelchair_accessible', icon: '♿', label: 'Wheelchair access', val: beach.wheelchair_accessible },
+    { key: 'bike_rack', icon: '🚲', label: 'Bike rack', val: beach.bike_rack },
+    { key: 'volleyball_court', icon: '🏐', label: 'Volleyball', val: beach.volleyball_court },
   ]
-  const present = items.filter((i) => i.show)
-  const absent = items.filter((i) => i.show === false && i.show !== undefined)
-
-  if (present.length === 0 && absent.length === 0) return <span className="text-stone-400 text-sm">—</span>
-
+  const known = items.filter((i) => i.val !== undefined)
+  if (known.length === 0) return <span className="text-stone-400 text-sm">—</span>
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1">
-      {present.map((i) => (
-        <span key={i.label} className="inline-flex items-center gap-1 text-sm text-stone-700">
-          <span>{i.icon}</span>{i.label}
+    <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+      {known.map((i) => (
+        <span key={i.key} className={`inline-flex items-center gap-1 text-sm ${i.val ? 'text-stone-700' : 'text-stone-400 line-through decoration-stone-300'}`}>
+          <span className={i.val ? '' : 'opacity-40'}>{i.icon}</span>
+          {i.label}
         </span>
       ))}
-      {items.filter((i) => beach[`restrooms` as keyof typeof beach] === false && i.icon === '🚻').length > 0 && absent.length > 0 && (
-        absent.map((i) => (
-          <span key={i.label} className="inline-flex items-center gap-1 text-sm text-stone-400 line-through decoration-stone-300">
-            <span className="opacity-50">{i.icon}</span>{i.label}
-          </span>
-        ))
-      )}
     </div>
   )
 }
 
-// ── Main component ──────────────────────────────────────────────
+// ── Main component ────────────────────────────────────────────
 
 export default function BeachDetail({ beach }: Props) {
   const sortedPhotos = [...beach.photos].sort((a, b) => a.photo_index - b.photo_index)
@@ -172,16 +163,14 @@ export default function BeachDetail({ beach }: Props) {
 
   const typeBadge = BEACH_TYPE_COLORS[beach.beach_type]
   const typeLabel = BEACH_TYPE_LABELS[beach.beach_type]
-
-  // Determine if we have any rich data to show
-  const hasRichData = !!(
-    beach.access_type || beach.parking_info || beach.water_body ||
-    beach.wave_intensity || beach.shark_risk || beach.lifeguards !== undefined ||
-    beach.restrooms !== undefined || beach.dog_policy_allowed !== undefined ||
-    beach.crowd_level || beach.beach_length_miles
-  )
-
   const knownTags = beach.best_for.filter((t) => KNOWN_BEST_FOR.has(t as never))
+
+  // Section visibility guards
+  const hasConditions = !!(beach.water_body || beach.avg_water_temp_f || beach.wave_intensity || beach.tidal_variation || beach.shark_risk || beach.jellyfish_risk)
+  const hasFacilities = beach.lifeguards !== undefined || beach.restrooms !== undefined || beach.showers !== undefined || beach.changing_rooms !== undefined || beach.wheelchair_accessible !== undefined || beach.bike_rack !== undefined || beach.volleyball_court !== undefined
+  const hasParking = !!(beach.access_type || beach.daily_parking_fee !== undefined || beach.resident_sticker_cost || beach.non_resident_seasonal_cost !== undefined || beach.parking_capacity || beach.parking_enforcement || beach.parking_info)
+  const hasDogs = beach.dog_policy_allowed !== undefined
+  const hasPlanning = !!(beach.crowd_level || beach.best_arrival_time || beach.beach_length_miles || beach.sand_type || beach.shade_available)
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">
@@ -198,12 +187,7 @@ export default function BeachDetail({ beach }: Props) {
         {/* ── Hero photo ── */}
         <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-stone-200 mb-4">
           {activePhoto ? (
-            <Image
-              src={activePhoto.storage_url}
-              alt={`${beach.name} — photo ${activeIdx + 1}`}
-              fill sizes="(max-width: 1024px) 100vw, 1024px"
-              className="object-cover" priority
-            />
+            <Image src={activePhoto.storage_url} alt={`${beach.name} — photo ${activeIdx + 1}`} fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" priority />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <svg className="w-16 h-16 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -211,7 +195,6 @@ export default function BeachDetail({ beach }: Props) {
               </svg>
             </div>
           )}
-
           {sortedPhotos.length > 1 && (
             <>
               <button onClick={() => setActiveIdx((i) => (i - 1 + sortedPhotos.length) % sortedPhotos.length)}
@@ -233,8 +216,7 @@ export default function BeachDetail({ beach }: Props) {
         {sortedPhotos.length > 1 && (
           <div className="flex gap-2 mb-6 overflow-x-auto pb-1 no-scrollbar">
             {sortedPhotos.map((photo, i) => (
-              <button key={photo.id} onClick={() => setActiveIdx(i)}
-                aria-label={`View photo ${i + 1}`}
+              <button key={photo.id} onClick={() => setActiveIdx(i)} aria-label={`View photo ${i + 1}`}
                 className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${i === activeIdx ? 'border-ocean' : 'border-transparent opacity-60 hover:opacity-100'}`}>
                 <Image src={photo.storage_url} alt={`Thumb ${i + 1}`} fill sizes="80px" className="object-cover" />
               </button>
@@ -242,25 +224,27 @@ export default function BeachDetail({ beach }: Props) {
           </div>
         )}
 
-        {/* ── Main content grid ── */}
+        {/* ── Main layout ── */}
         <div className="grid md:grid-cols-3 gap-8">
 
-          {/* Left — title + description */}
+          {/* Left — headline + description + best-for */}
           <div className="md:col-span-2">
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className={`text-xs font-mono font-medium px-2.5 py-1 rounded-full ${typeBadge}`}>{typeLabel}</span>
-              <AccessBadge accessType={beach.access_type} />
+              {beach.access_type && <AccessBadge accessType={beach.access_type} />}
               {activePhoto && <CacheBadge cachedAt={activePhoto.cached_at} />}
             </div>
 
             <h1 className="font-display text-3xl md:text-4xl font-bold text-stone-800 mb-1">{beach.name}</h1>
-            <p className="font-mono text-stone-500 text-sm uppercase tracking-widest mb-4">{beach.town}, Massachusetts</p>
+            <p className="font-mono text-stone-500 text-sm uppercase tracking-widest mb-4">
+              {beach.town}, Massachusetts{beach.water_body ? ` · ${beach.water_body}` : ''}
+            </p>
 
             <StarRow rating={beach.rating?.rating ?? null} count={beach.rating?.rating_count ?? null} />
 
             <p className="mt-5 text-stone-600 leading-relaxed text-[15px]">{beach.description}</p>
 
-            {/* Best for */}
+            {/* Best For */}
             {knownTags.length > 0 && (
               <div className="mt-6">
                 <p className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-2">Best For</p>
@@ -275,113 +259,155 @@ export default function BeachDetail({ beach }: Props) {
               </div>
             )}
 
-            {/* Attribution */}
+            {/* Quick-tip arrival time */}
+            {beach.best_arrival_time && (
+              <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <p className="text-[10px] font-mono text-amber-600 uppercase tracking-wider mb-1">💡 Best Arrival</p>
+                <p className="text-sm text-amber-800">{beach.best_arrival_time}</p>
+              </div>
+            )}
+
             {activePhoto?.attribution && (
-              <p className="mt-5 text-xs font-mono text-stone-400">
-                Photo by {activePhoto.attribution} via Google Places
-              </p>
+              <p className="mt-5 text-xs font-mono text-stone-400">Photo by {activePhoto.attribution} via Google Places</p>
             )}
           </div>
 
-          {/* Right — info card */}
-          <div className="space-y-4">
+          {/* Right — detail cards */}
+          <div className="space-y-3">
 
-            {/* At a Glance card */}
-            {hasRichData && (
+            {/* ── Water & Conditions ── */}
+            {hasConditions && (
               <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-                <div className="px-4 py-3 border-b border-stone-100">
-                  <h2 className="text-xs font-mono font-semibold text-stone-500 uppercase tracking-wider">At a Glance</h2>
-                </div>
-                <div className="px-4 divide-y divide-stone-100">
-                  {beach.access_type && (
-                    <InfoRow icon="🅿️" label="Access" value={<AccessBadge accessType={beach.access_type} />} />
-                  )}
-                  {beach.daily_parking_fee !== undefined && beach.daily_parking_fee !== null && (
-                    <InfoRow icon="💵" label="Daily Parking" value={`$${beach.daily_parking_fee}`} />
-                  )}
-                  {beach.daily_parking_fee === null && beach.access_type === 'resident_only' && (
-                    <InfoRow icon="💵" label="Daily Parking" value="Not available (sticker only)" />
-                  )}
-                  {beach.water_body && (
-                    <InfoRow icon="🌊" label="Water Body" value={beach.water_body} />
-                  )}
-                  {beach.avg_water_temp_f && (
-                    <InfoRow icon="🌡️" label="Summer Water Temp" value={`${beach.avg_water_temp_f}°F`} />
-                  )}
-                  {beach.wave_intensity && (
-                    <InfoRow icon="〰️" label="Wave Intensity" value={<WaveBadge intensity={beach.wave_intensity} />} />
-                  )}
-                  {beach.shark_risk && (
-                    <InfoRow icon="🦈" label="Shark Risk" value={<SharkBadge risk={beach.shark_risk} />} />
-                  )}
-                  {(beach.lifeguards !== undefined || beach.restrooms !== undefined || beach.showers !== undefined || beach.wheelchair_accessible !== undefined) && (
-                    <InfoRow icon="🏖️" label="Facilities" value={<FacilityIcons beach={beach} />} />
-                  )}
-                  {beach.lifeguards && beach.lifeguard_season && (
-                    <InfoRow icon="🏊" label="Lifeguard Hours" value={
-                      <span>{beach.lifeguard_season}{beach.lifeguard_hours ? `, ${beach.lifeguard_hours}` : ''}</span>
-                    } />
-                  )}
-                  {beach.dog_policy_allowed !== undefined && (
-                    <InfoRow
-                      icon="🐕"
-                      label="Dogs"
-                      value={
-                        <span className={beach.dog_policy_allowed ? 'text-green-700' : 'text-red-600'}>
-                          {beach.dog_policy_allowed ? '✓ Allowed' : '✗ Not allowed in season'}
-                          {beach.dog_policy_details && (
-                            <span className="block text-xs text-stone-500 mt-0.5">{beach.dog_policy_details}</span>
-                          )}
-                        </span>
-                      }
-                    />
-                  )}
-                  {beach.crowd_level && (
-                    <InfoRow icon="👥" label="Crowd Level" value={
-                      <span className={{ low: 'text-green-700', moderate: 'text-amber-600', high: 'text-red-600' }[beach.crowd_level] ?? ''}>
-                        {{ low: '● Low', moderate: '● Moderate', high: '● High' }[beach.crowd_level]}
-                      </span>
-                    } />
-                  )}
-                  {beach.beach_length_miles && (
-                    <InfoRow icon="📏" label="Beach Length" value={`~${beach.beach_length_miles} mile${beach.beach_length_miles !== 1 ? 's' : ''}`} />
-                  )}
-                  {beach.food_nearby && (
-                    <InfoRow icon="🍦" label="Food Nearby" value={beach.food_nearby} />
-                  )}
-                  {beach.parking_info && !beach.access_type && (
-                    <InfoRow icon="🚗" label="Parking" value={beach.parking_info} />
-                  )}
-                </div>
+                <SectionTitle>Water &amp; Conditions</SectionTitle>
+                {beach.wave_intensity && (
+                  <Row icon="〰️" label="Wave Intensity" value={<WaveBar intensity={beach.wave_intensity} />} />
+                )}
+                {beach.avg_water_temp_f && (
+                  <Row icon="🌡️" label="Summer Water Temp" value={`${beach.avg_water_temp_f}°F`} />
+                )}
+                {beach.tidal_variation && (
+                  <Row icon="🌊" label="Tidal Range" value={<TideBadge variation={beach.tidal_variation} />} />
+                )}
+                {beach.shark_risk && (
+                  <Row icon="🦈" label="Shark Risk" value={<RiskBadge level={beach.shark_risk} type="shark" />} />
+                )}
+                {beach.jellyfish_risk && (
+                  <Row icon="🪼" label="Jellyfish" value={<RiskBadge level={beach.jellyfish_risk} type="jellyfish" />} />
+                )}
               </div>
             )}
 
-            {/* If no rich data, show parking info as simple card */}
-            {!hasRichData && beach.parking_info && (
-              <div className="bg-white rounded-2xl border border-stone-200 px-4 py-3">
-                <p className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-1">Parking</p>
-                <p className="text-sm text-stone-700">{beach.parking_info}</p>
+            {/* ── Facilities ── */}
+            {hasFacilities && (
+              <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+                <SectionTitle>Facilities</SectionTitle>
+                <div className="px-4 py-3">
+                  <FacilityDots beach={beach} />
+                </div>
+                {beach.lifeguards && beach.lifeguard_season && (
+                  <Row icon="🏊" label="Lifeguard Hours" value={`${beach.lifeguard_season}${beach.lifeguard_hours ? `, ${beach.lifeguard_hours}` : ''}`} />
+                )}
+                {beach.food_nearby && (
+                  <Row icon="🍦" label="Food Nearby" value={beach.food_nearby} />
+                )}
+                {beach.shade_available && (
+                  <Row icon="☂️" label="Shade" value={beach.shade_available} />
+                )}
+                {beach.sand_type && (
+                  <Row icon="🏖️" label="Sand" value={beach.sand_type} />
+                )}
               </div>
             )}
 
-            {/* Google Maps */}
-            <div className="bg-white rounded-2xl border border-stone-200 px-4 py-3">
-              <p className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-2">Location</p>
-              <a
-                href={`https://maps.google.com/?q=${beach.lat},${beach.lng}`}
-                target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-ocean hover:underline font-mono"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Open in Google Maps
-              </a>
+            {/* ── Dogs ── */}
+            {hasDogs && (
+              <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+                <SectionTitle>Dog Policy</SectionTitle>
+                <Row
+                  icon="🐕"
+                  label={beach.dog_policy_allowed ? 'Dogs Allowed' : 'Dogs Restricted'}
+                  value={
+                    <span className={beach.dog_policy_allowed ? 'text-green-700' : 'text-amber-700'}>
+                      {beach.dog_policy_allowed ? '✓ Dogs welcome' : '⚠ Seasonal restrictions'}
+                      {beach.dog_policy_details && (
+                        <span className="block text-xs text-stone-500 mt-0.5">{beach.dog_policy_details}</span>
+                      )}
+                    </span>
+                  }
+                />
+              </div>
+            )}
+
+            {/* ── Parking & Access ── */}
+            {hasParking && (
+              <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+                <SectionTitle>Parking &amp; Access</SectionTitle>
+                {beach.access_type && (
+                  <Row icon="🅿️" label="Access Type" value={<AccessBadge accessType={beach.access_type} />} />
+                )}
+                {beach.daily_parking_fee !== undefined && beach.daily_parking_fee !== null && (
+                  <Row icon="💵" label="Daily Fee" value={`$${beach.daily_parking_fee}`} />
+                )}
+                {beach.resident_sticker_cost !== undefined && (
+                  <Row icon="📋" label="Resident Sticker" value={`$${beach.resident_sticker_cost}/season`} />
+                )}
+                {beach.non_resident_seasonal_cost !== undefined && beach.non_resident_seasonal_cost !== null && (
+                  <Row icon="📋" label="Non-Resident Pass" value={`$${beach.non_resident_seasonal_cost}/season`} />
+                )}
+                {beach.parking_capacity && (
+                  <Row icon="🚗" label="Lot Size" value={{ small: 'Small lot', medium: 'Medium lot', large: 'Large lot' }[beach.parking_capacity]} />
+                )}
+                {beach.parking_enforcement && (
+                  <Row icon="⏰" label="Enforcement" value={beach.parking_enforcement} />
+                )}
+                {beach.parking_info && (
+                  <Row icon="ℹ️" label="Notes" value={beach.parking_info} />
+                )}
+              </div>
+            )}
+
+            {/* ── Planning ── */}
+            {hasPlanning && (
+              <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+                <SectionTitle>Planning</SectionTitle>
+                {beach.crowd_level && (
+                  <Row icon="👥" label="Crowd Level" value={
+                    <span className={{ low: 'text-green-700', moderate: 'text-amber-600', high: 'text-red-600' }[beach.crowd_level] ?? ''}>
+                      {{ low: '● Low — rarely packed', moderate: '● Moderate — busy weekends', high: '● High — arrive early' }[beach.crowd_level]}
+                    </span>
+                  } />
+                )}
+                {beach.beach_length_miles && (
+                  <Row icon="📏" label="Beach Length" value={`~${beach.beach_length_miles} mile${beach.beach_length_miles !== 1 ? 's' : ''}`} />
+                )}
+                {beach.sunset_view && (
+                  <Row icon="🌅" label="Sunset View" value={<span className="text-orange-600 font-medium">Great sunset spot</span>} />
+                )}
+              </div>
+            )}
+
+            {/* ── Location & Contact ── */}
+            <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+              <SectionTitle>Location &amp; Contact</SectionTitle>
+              <Row icon="📍" label="Directions" value={
+                <a href={`https://maps.google.com/?q=${beach.lat},${beach.lng}`} target="_blank" rel="noopener noreferrer"
+                  className="text-ocean hover:underline font-mono">Open in Google Maps</a>
+              } />
+              {beach.phone && (
+                <Row icon="📞" label="Phone" value={
+                  <a href={`tel:${beach.phone}`} className="text-ocean hover:underline font-mono">{beach.phone}</a>
+                } />
+              )}
+              {beach.town_beach_url && (
+                <Row icon="🔗" label="Official Page" value={
+                  <a href={beach.town_beach_url} target="_blank" rel="noopener noreferrer" className="text-ocean hover:underline font-mono text-xs break-all">Town website</a>
+                } />
+              )}
               {beach.rating?.refreshed_at && (
-                <p className="text-[10px] font-mono text-stone-400 mt-2">Ratings updated {cacheAgeLabel(beach.rating.refreshed_at)}</p>
+                <Row icon="⭐" label="Ratings Updated" value={<span className="font-mono text-stone-500">{cacheAgeLabel(beach.rating.refreshed_at)}</span>} />
               )}
             </div>
+
           </div>
         </div>
       </div>

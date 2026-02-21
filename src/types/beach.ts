@@ -37,7 +37,9 @@ export interface Beach {
   water_body?: string
   avg_water_temp_f?: string
   wave_intensity?: 'calm' | 'moderate' | 'surf'
+  tidal_variation?: 'low' | 'moderate' | 'high'
   shark_risk?: 'low' | 'moderate' | 'elevated'
+  jellyfish_risk?: string
 
   // Facilities
   lifeguards?: boolean
@@ -45,6 +47,9 @@ export interface Beach {
   lifeguard_hours?: string
   restrooms?: boolean
   showers?: boolean
+  changing_rooms?: boolean
+  bike_rack?: boolean
+  volleyball_court?: boolean
   food_nearby?: string
   wheelchair_accessible?: boolean
 
@@ -52,11 +57,24 @@ export interface Beach {
   dog_policy_allowed?: boolean
   dog_policy_details?: string
 
+  // Parking details
+  resident_sticker_cost?: number
+  non_resident_seasonal_cost?: number | null
+  parking_capacity?: 'small' | 'medium' | 'large'
+  parking_enforcement?: string
+
   // Planning
   crowd_level?: 'low' | 'moderate' | 'high'
   daily_parking_fee?: number | null
   beach_length_miles?: number | null
   sunset_view?: boolean
+  best_arrival_time?: string
+  sand_type?: string
+  shade_available?: string
+
+  // Contact & official info
+  town_beach_url?: string
+  phone?: string
 }
 
 export interface BeachPhoto {
